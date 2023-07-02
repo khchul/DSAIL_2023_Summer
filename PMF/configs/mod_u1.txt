@@ -5,7 +5,7 @@ datadir = ../datasets/ml-100k/modified_u1.base
 split = train
 batch_size = 256
 shuffle = True
-N_epoch = 100
+N_epoch = 150
 
 D = 30
 N = 943
