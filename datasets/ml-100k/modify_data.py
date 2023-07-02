@@ -11,7 +11,7 @@ with open("u1.base") as i_file:
         user[id] += 1
         if id > 50:
             base_file.write(line)
-        elif user[id] <= 15:
+        elif user[id] <= 5:
             base_file.write(line)
         else:
             lines.append(line)

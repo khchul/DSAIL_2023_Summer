@@ -4,7 +4,6 @@ from torch.utils.data import Dataset
 class movie_lens(Dataset):
     def __init__(self, path, split='train'):
         self.path = path
-        self.split = split
         self.read_meta()
 
     def read_meta(self):

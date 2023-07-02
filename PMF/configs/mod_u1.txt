@@ -2,7 +2,6 @@ expname = ml_100k_mu1
 basedir = ./logs
 datadir = ../datasets/ml-100k/modified_u1.base
 
-split = train
 batch_size = 256
 shuffle = True
 N_epoch = 150
