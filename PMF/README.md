@@ -14,17 +14,20 @@ Dataset : https://grouplens.org/datasets/movielens/100k/
     : Consists of user 51 ~
 
 
-Training constrained PMF
-'''
-python train.py --config configs/mod_u1.txt --constrained --lu=0.002 --lv=0.002 --lw=0.002
-'''
+### Training PMF
 
-Training PMF
 '''
 python train.py --config configs/mod_u1.txt
 '''
 
-Training PMFA
+### Training PMFA
+
 '''
 python train.py --config configs/mod_u1.txt --adaptive --N_a 15
 '''
+
+### Training constrained PMF
+
+```
+python train.py --config configs/mod_u1.txt --constrained --lu=0.002 --lv=0.002 --lw=0.002
+```
