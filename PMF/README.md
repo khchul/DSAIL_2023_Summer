@@ -16,15 +16,15 @@ Dataset : https://grouplens.org/datasets/movielens/100k/
 
 ### Training PMF
 
-'''
+```
 python train.py --config configs/mod_u1.txt
-'''
+```
 
 ### Training PMFA
 
-'''
+```
 python train.py --config configs/mod_u1.txt --adaptive --N_a 15
-'''
+```
 
 ### Training constrained PMF
 
