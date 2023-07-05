@@ -39,7 +39,7 @@ def calculate_rmse(dict, data_path):
             
         UTV = torch.sigmoid(torch.diagonal(torch.mm(U, V_))).to(device)
 
-        RMSE = ratings_loss(UTV, ratings).sqrt()
+        RMSE += ratings_loss(UTV, ratings).sqrt()
     
     return (RMSE / (len(dataloader))).cpu().numpy()
 
