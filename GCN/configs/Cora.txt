@@ -1,0 +1,12 @@
+dataset = Planetoid
+expname = Cora
+
+basedir = ./logs
+datadir = ./datasets
+
+N_epoch = 150
+dropout
+dropout_rate = 0.5
+F = 16
+L2 = 5e-4
+lr = 1e-2
