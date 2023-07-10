@@ -1,0 +1,11 @@
+expname = ml_100k_mu1
+basedir = ./logs
+datadir = ../datasets/ml-100k/u1.base
+
+N_user = 943
+N_movie = 1682
+f = 100
+
+alpha = 40
+eps = 1e-8
+l = 1e-2
