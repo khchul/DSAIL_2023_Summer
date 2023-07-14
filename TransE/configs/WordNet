@@ -1,0 +1,11 @@
+dataset = WordNet
+basedir = ./logs
+expname = WordNet
+datadir = ./datasets/WordNet
+
+norm = 1
+N_epoch = 1000
+batch_size = 64
+k = 20
+r = 2
+lr = 1e-2
