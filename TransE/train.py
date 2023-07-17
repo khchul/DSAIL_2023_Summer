@@ -69,6 +69,11 @@ def train(args):
                 = F.normalize(E[(train_eset[:, i:i+batch_size]+corrupted_idx) % num_nodes], dim=-1)
             E.requires_grad_(True)
 
+            if args.l_norm:
+                L.requires_grad_(False)
+                L[train_lset[i:i+batch_size]] = F.normalize(L[train_lset[i:i+batch_size]])
+                L.requires_grad_(True)
+
             optimizer.zero_grad()
             loss = loss_fn(l, t-h, t_ - h_)
             losses.append(loss.item())
