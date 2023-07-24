@@ -1,0 +1,4 @@
+dataset = AMiner
+basedir = ./logs
+expname = AMiner
+datadir = ./datasets/AMiner
