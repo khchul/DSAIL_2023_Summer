@@ -6,7 +6,7 @@ Dataset : AMiner, with reduced size
 ### Training metapath
 
 ```
-python train.py --config configs/AMiner.txt
+python train.py --config configs/AMiner.txt --is_meta
 ```
 
 ### Visualizing metapath
