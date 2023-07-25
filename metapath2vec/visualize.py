@@ -13,24 +13,26 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 @torch.no_grad()
 def test(args):
-    path = os.path.join(args.basedir, args.expname, args.testname)
-    model = torch.load(path)
-    
 
+    model_path = os.path.join(args.basedir, args.expname, args.testname)
+    model = torch.load(model_path)
+    
     if args.dataset == 'AMiner':
         dataset = AMiner(root=args.datadir)
     else:
         raise NotImplementedError
 
-    test_embeddings = model['embedding'][dataset[0]['author']['y_index']]
+    test_embeddings = model['embedding.weight'][dataset[0]['author']['y_index']]
     test_labels = dataset[0]['author']['y']
 
+    path = os.path.join(args.basedir, args.expname)
     writer = SummaryWriter(path)
     writer.add_embedding(
         test_embeddings,
         test_labels
     )
     
+    writer.flush()
     writer.close()
 
 if __name__ == '__main__':

@@ -59,17 +59,12 @@ def train(args):
     data[('venue', 'publishes', 'paper')]['edge_index'] = data[('venue', 'publishes', 'paper')]['edge_index'][:, torch.any(data[('venue', 'publishes', 'paper')]['edge_index'] != 0, dim=0)]
 
     print('dataset cropped')
-   
-    #y : gt category
-    #y_idx : idx of the node
-    
-    #prob = torch.ones((3,3))
+
     prob = calc_prob(
         data[('author', 'writes', 'paper')]['edge_index'],
         num_authors,
         device
     )
-    
     print('Probability distribution complete')
 
     if args.is_meta:
@@ -84,28 +79,18 @@ def train(args):
     
     model = model.to(device)
     batch_size_ = args.batch_size
-    #writer = SummaryWriter(path)
-    
+
     for e in trange(1, args.N_walk+1):
-        #losses = []
         for i in range(0, num_authors, batch_size_):
             batch_size = batch_size_ if i+batch_size_ < num_authors else num_authors-i
-            path = model.walk(
+            walk_path = model.walk(
                 torch.arange(i, i+batch_size).unsqueeze(1).to(device),
                 data[('author', 'writes', 'paper')]['edge_index'],
                 data[('paper', 'published_in', 'venue')]['edge_index'],
                 data[('venue', 'publishes', 'paper')]['edge_index'],
                 data[('paper', 'written_by', 'author')]['edge_index']
             ).to(device)
-            model.skipgram(path)
-            
-
-        #writer.add_scalar('Train loss', sum(losses)/len(losses), e)
-        #if e%10 == 0:
-            #tqdm.write(f'[TRAIN] Epoch: {e}, Loss: {sum(losses)/len(losses):.4f}')
-
-    #writer.flush()
-    #writer.close()
+            model.skipgram(walk_path)
 
     torch.save(model.state_dict(), os.path.join(path, f'{args.N_walk}.pt'))
 
