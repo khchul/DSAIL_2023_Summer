@@ -6,41 +6,100 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-def calc_prob(AWP, num_author, device):
-    prob = torch.zeros(num_author, device=device)
+def get_nbd(edges):
+    nbd = {}
+
+    for e in edges.t():
+        if e[0].item() in nbd:
+            nbd[e[0].item()].append(e[1].item())
+        else:
+            nbd[e[0].item()] = [e[1].item()]
+
+        if e[1].item() in nbd:
+            nbd[e[1].item()].append(e[0].item())
+        else:
+            nbd[e[1].item()] = [e[0].item()]
+
+    return nbd
+
+def calc_prob(num_nodes, edges, device):
+    '''
+    Calculate probabilities
+    for negative sampling
+    '''
+    prob = torch.zeros(num_nodes, dtype=int, device=device)
+    nodes, counts = torch.unique(edges, return_counts=True)
+    prob[nodes] = counts
     
-    for i in range(AWP.size(1)):
-        prob[AWP[0][i]] += 1
-    
-    prob = torch.pow(prob, .75) / math.pow(AWP.size(1), .75)
+    prob = torch.pow(prob, .75) / math.pow(edges.size(1)*2, .75)
 
     return prob
 
-class metapath2vec(nn.Module):
+class GraphSAGE(nn.Module):
     '''
     path : metapath
     l : walk length
     d : vector dimension
     k : neighborhood size
     '''
-    def __init__(self, N_author, N_venue, N_paper, prob, args):
-        super(metapath2vec, self).__init__()
+    def __init__(self, prob, nbd, width, args):
+        super(GraphSAGE, self).__init__()
 
-        self.N_author = N_author
-        self.N_venue = N_venue
-        self.N_paper = N_paper
-        self.N_total = N_author + N_venue + N_paper
+        self.depth = args.depth
         self.prob = prob
+        self.nbd = nbd
 
-        self.path = args.metapath
-        self.l = args.walk_len
-        self.d = args.d
-        self.k = args.neighborhood
-        self.lr = args.lr
+        self.aggregator = nn.Sequential(
+            nn.Linear(width, width),
+            nn.ReLU()
+        )
+        self.linears = nn.ModuleList(
+            [nn.Linear(width) * args.depth]
+        )
+
+    def forward(self, x):
+        '''
+        x : (batch_size) * [node_idx, features.t()]
+        '''
+        def _create_bn(nbd, k, nodes): #Create B^K
+            Bk = [set() for _ in range(k+1)]
+
+            Bk[-1] = set(nodes.tolist())
+            for i in range(k-1, -1, -1):
+                s = set()
+                for n in Bk[i+1]:
+                    s = s.union(set(nbd[n]))
+                Bk[i] = Bk[i+1].union(s)
+
+            return Bk
         
-        # Dim : [author, venue, paper] x d
-        self.embedding = nn.Embedding(num_embeddings=self.N_total, embedding_dim=self.d)
+        Bk = _create_bn(self.nbd, self.depth, x[:,0])
+        Hk = dict.fromkeys(Bk[0])
+        for k in Bk[0]:
+            Hk[k] = torch.zeros(size=[self.depth+1, x[:,1:].size(-1)], device=x.device, dtype=x.dtype)
+        for row in x:
+            Hk[row[0]][0] = row[1:]
 
+        for k in range(1, self.depth+1):
+            for u in Bk[k]:
+                nbd_list = []
+                for nu in self.nbd[u]:
+                    nbd_list.append(self.aggregator(Hk[nu][k-1]))
+                agg_u, _ = torch.max(torch.stack(nbd_list), dim=0)
+                Hk[u][k] = F.relu(self.linears[k-1](torch.cat([Hk[u][k-1], agg_u])))
+                Hk[u][k] = F.normalize(Hk[u][k], dim=0)
+
+        ret = []
+        for row in x:
+            ret.append(Hk[row[0]][-1])
+
+        return torch.stack(ret)
+
+    '''
+    |
+    | Need to modify
+    V 
+    '''
     def walk(self, starting_points, AWP, PPV, VPP, PWA):
         def _random_select(tf):
             ret = torch.zeros(tf.size(0), 1, dtype=int)

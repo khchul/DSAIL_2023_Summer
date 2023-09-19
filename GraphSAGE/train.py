@@ -10,6 +10,9 @@ from torch_geometric.datasets import Planetoid
 from torch_geometric.datasets import NELL
 
 from config import config_parser
+from helpers import GraphSAGE
+from helpers import calc_prob
+from helpers import get_nbd
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -23,28 +26,27 @@ def train(args):
         dataset = NELL(root=args.datadir)
     else:
         raise NotImplementedError
-    
+
     data = dataset[0].to(device)
-    print(data)
+    train_data = {
+        'x':data['x'],
+        'y':data['y'][data['train_mask']],
+        'edge_index':data['edge_index'],
+        'Num_nodes':data['train_mask'].shape[0]
+    }.to(device)
     
     prob = calc_prob(
-        data[('author', 'writes', 'paper')]['edge_index'],
-        num_authors,
+        train_data['Num_nodes'],
+        train_data['edge_index'],
         device
     )
     print('Probability distribution complete')
 
-    if args.is_meta:
-        model = metapath2vec(
-            data['author']['num_nodes'],
-            data['venue']['num_nodes'], 
-            data['paper']['num_nodes'],
-            prob,
-            args)
-    else:
-        raise NotImplementedError
-    
+    nbd = get_nbd(train_data['edge_index'])
+    model = GraphSAGE(prob, nbd, train_data['x'].size(1), args)
     model = model.to(device)
+
+    #######
     batch_size_ = args.batch_size
 
     for e in trange(1, args.N_walk+1):
@@ -62,7 +64,6 @@ def train(args):
     torch.save(model.state_dict(), os.path.join(path, f'{args.N_walk}.pt'))
 
 if __name__ == '__main__':
-    torch.set_default_device(device)
     parser = config_parser()
     args = parser.parse_args()
 

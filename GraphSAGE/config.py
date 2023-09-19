@@ -9,6 +9,7 @@ def config_parser():
     parser.add_argument('--expname', type=str, help='experiment name')
     parser.add_argument('--datadir', type=str, help='data directory')
 
+    parser.add_argument('--depth', type=int, default=2, help='Size of depth')
     parser.add_argument('--N_walk', type=int, default=150, help='Number of walks per node')
     parser.add_argument('--walk_len', type=int, default= 12, help='Walk length')
     parser.add_argument('--neighborhood', type=int, default=3, help='Neighborhood size')
