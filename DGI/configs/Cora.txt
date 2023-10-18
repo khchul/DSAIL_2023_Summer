@@ -1,0 +1,7 @@
+dataset = Planetoid
+expname = Cora
+
+basedir = ./logs
+datadir = ../datasets
+
+transductive
