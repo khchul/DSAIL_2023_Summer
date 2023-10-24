@@ -1,5 +1,5 @@
-dataset = Planetoid
-expname = Cora
+dataset = PPI
+expname = PPI
 
 basedir = ./logs
 datadir = ../datasets

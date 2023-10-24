@@ -10,14 +10,17 @@ def config_parser():
     parser.add_argument('--datadir', type=str, help='data directory')
 
     parser.add_argument('--transductive', action='store_true', help='Transductive learning')
+    parser.add_argument('--feature', action='store_true', help='Feature corruption')
+    parser.add_argument('--adjacency', action='store_true', help='Adjacency corruption')
 
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('--N', type=int, default=1, help='Number of positive samples')
     parser.add_argument('--M', type=int, default=1, help='Number of negative samples')
+    parser.add_argument('--E_dim', type=int, default=256, help='Dimension of vector embeddings')
 
     #Test args
-    parser.add_argument('--testname', type=str, help='Name of the trained tensors')
-    parser.add_argument('--batch_size', type=int, default=64, help='Batch chunk size')
+    #parser.add_argument('--testname', type=str, help='Name of the trained tensors')
+    #parser.add_argument('--batch_size', type=int, default=64, help='Batch chunk size')
 
     return parser
