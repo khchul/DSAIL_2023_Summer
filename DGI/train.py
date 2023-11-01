@@ -54,9 +54,7 @@ def train(args):
         writer.add_scalar('Train loss', sum(losses)/len(losses), i)
         if i%10 == 0:
             tqdm.write(f'[TRAIN] Epoch: {i}: {loss:.4f}')
-
-    print(model.state_dict()['GCN.module_0.lin.weight'].size())
-
+            
     writer.flush()
     writer.close()
 
