@@ -54,8 +54,7 @@ class DGI(nn.Module):
                 nn.PReLU()
                 ]
             )
-            #raise NotImplementedError
-
+            
         self.readout = lambda input : F.sigmoid(input.mean(dim=0))
         self.W = nn.Linear(self.E_dim, self.E_dim)
 

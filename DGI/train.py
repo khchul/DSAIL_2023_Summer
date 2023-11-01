@@ -53,8 +53,8 @@ def train(args):
 
         writer.add_scalar('Train loss', sum(losses)/len(losses), i)
         if i%10 == 0:
-            tqdm.write(f'[TRAIN] Epoch: {i}: {loss:.4f}')
-            
+            tqdm.write(f'[TRAIN] Epoch: {i}: {loss}')
+
     writer.flush()
     writer.close()
 
