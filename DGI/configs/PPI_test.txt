@@ -7,4 +7,4 @@ basedir = ./logs
 datadir = ../datasets
 
 L_type = inductive
-E_dim = 512
+E_dim = 256
