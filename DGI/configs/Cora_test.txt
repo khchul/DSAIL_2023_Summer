@@ -1,0 +1,10 @@
+dataset = Planetoid
+expname = Cora
+testname = transductive_feature_200.pt
+split = full
+
+basedir = ./logs
+datadir = ../datasets
+
+L_type = transductive
+E_dim = 50

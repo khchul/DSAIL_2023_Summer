@@ -1,7 +1,9 @@
 dataset = Planetoid
 expname = Cora
+split = full
 
 basedir = ./logs
 datadir = ../datasets
 
-transductive
+L_type = transductive
+E_dim = 50

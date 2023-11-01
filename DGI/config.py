@@ -8,19 +8,17 @@ def config_parser():
     parser.add_argument('--basedir', type=str, help='where to store ckpts and logs')
     parser.add_argument('--expname', type=str, help='experiment name')
     parser.add_argument('--datadir', type=str, help='data directory')
+    parser.add_argument('--testname', type=str, help='test name')
+    parser.add_argument('--split', type=str, help='dataset split type')
 
-    parser.add_argument('--transductive', action='store_true', help='Transductive learning')
-    parser.add_argument('--feature', action='store_true', help='Feature corruption')
-    parser.add_argument('--adjacency', action='store_true', help='Adjacency corruption')
+    parser.add_argument('--L_type', type=str, help='Learning type')
+    parser.add_argument('--C_type', type=str, default='feature', help='Corruption type')
 
-    parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
+    parser.add_argument('--batch_size', type=int, default=256, help='Number of nodes in a batch')
+    parser.add_argument('--N_epoch', type=int, default=200, help='Number of epochs')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
-    parser.add_argument('--N', type=int, default=1, help='Number of positive samples')
-    parser.add_argument('--M', type=int, default=1, help='Number of negative samples')
+    parser.add_argument('--l2', type=float, default=0, help='L2 regularizer')
     parser.add_argument('--E_dim', type=int, default=256, help='Dimension of vector embeddings')
-
-    #Test args
-    #parser.add_argument('--testname', type=str, help='Name of the trained tensors')
-    #parser.add_argument('--batch_size', type=int, default=64, help='Batch chunk size')
+    parser.add_argument('--p', type=float, default=.5, help='Corruption rate for adjacency corruption')
 
     return parser

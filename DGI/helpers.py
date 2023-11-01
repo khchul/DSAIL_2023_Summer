@@ -3,53 +3,64 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import torch_geometric.nn as gnn
-import torch_geometric.utils as gnu
+
+from torch_geometric.utils import dropout_edge
 
 class Corrupter():
-    def __init__(self, N_graph):
-        self.N_graph = N_graph
+    def __init__(self):
         self.init_crpt()
 
     def init_crpt(self):
-        feat_crpt_fns = []
-        adj_crpt_fns = []
+        self.feat_crpt = lambda X: X[torch.randperm(X.size(0))]
+        self.adj_crpt = lambda A, p:dropout_edge(edge_index=A, p=p, force_undirected=True)
 
-        for _ in range(self.N_graph):
-            feat_crpt_fns.append(lambda X: X[torch.randperm(X.size(0))])
-            adj_crpt_fns.append(lambda A, p:gnu.dropout_edge(edge_index=A, p=p, force_undirected=True))
+    def corrupt(self, type, batch, p=.5):
+        crpt_batch = {
+            'x': batch['x'],
+            'edge_index': batch['edge_index']
+        }
 
-        self.feat_crpt = feat_crpt_fns
-        self.adj_crpt = adj_crpt_fns
+        if type == 'feature' or type == 'both':
+            crpt_batch['x'] = self.feat_crpt(batch['x'])
+        elif type == 'adjacency' or type == 'both':
+            crpt_batch['edge_index'] = self.adj_crpt(batch['edge_index'], p)
 
-    def corrupt(self, type, dataset, p=.5):
-        if type == 'feature':
-            return [self.feat_crpt(data['x']) for data in dataset]
-        elif type == 'adjacency':
-            return [self.adj_crpt(data['edge_index'], p) for data in dataset]
+        return crpt_batch
+            
 
 
 class DGI(nn.Module):
-    def __init__(self, xdim, adim, args):
+    def __init__(self, F_dim, E_dim, type):
         super(DGI, self).__init__()
 
-        self.E_dim = args.E_dim
+        self.F_dim = F_dim
+        self.E_dim = E_dim
+        self.type = type
 
-        if args.transductive == True:
+        if type == 'transductive':
             self.GCN = gnn.Sequential('x, edge_index',[
-                (gnn.GCNConv(-1, self.E_dim), 'x, edge_index'),
+                (gnn.GCNConv(self.F_dim, self.E_dim), 'x, edge_index -> x'),
                 nn.ReLU(inplace=True)
             ]
             )
         else:
-            raise NotImplementedError
+            # Three-layer mean pooling
+            self.GCN = gnn.Sequential('x, edge_index',[
+                (gnn.SAGEConv((self.F_dim, self.F_dim), self.E_dim), 'x, edge_index -> x'),
+                nn.PReLU(),
+                (gnn.SAGEConv((self.E_dim, self.E_dim), self.E_dim), 'x, edge_index -> x'),
+                nn.PReLU(),
+                (gnn.SAGEConv((self.E_dim, self.E_dim), self.E_dim), 'x, edge_index -> x'),
+                nn.PReLU()
+                ]
+            )
+            #raise NotImplementedError
 
-        self.Readout = lambda input : F.sigmoid(input.sum(dim=0))
+        self.readout = lambda input : F.sigmoid(input.mean(dim=0))
         self.W = nn.Linear(self.E_dim, self.E_dim)
 
     def encode(self, X, A):
         return self.GCN(X, A)
-    
-    def discriminate(self, h, s):
-        return F.sigmoid(torch.dot(h, self.W(s)))
-    
-    # Check if the vectors change after one iteration
+        
+    def discriminate(self, H, s):
+        return torch.matmul(H, self.W(s))

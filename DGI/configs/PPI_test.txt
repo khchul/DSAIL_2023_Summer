@@ -1,0 +1,10 @@
+dataset = PPI
+expname = PPI
+testname = inductive_feature_200.pt
+split = test
+
+basedir = ./logs
+datadir = ../datasets
+
+L_type = inductive
+E_dim = 512

@@ -1,5 +1,9 @@
 dataset = PPI
 expname = PPI
+split = train
 
 basedir = ./logs
 datadir = ../datasets
+
+L_type = inductive
+E_dim = 256
